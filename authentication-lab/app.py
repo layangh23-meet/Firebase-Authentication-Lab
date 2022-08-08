@@ -9,10 +9,13 @@ Config = {"apiKey": "AIzaSyDqR_yGSPt5ghxT3fN1g09IZhebDawjBMs",
   "storageBucket": "layanproject-f01e1.appspot.com",
   "messagingSenderId": "465695879242",
   "appId": "1:465695879242:web:f7dc800ae08b44c871b6b3",
-  "measurementId": "G-C63W3J82KQ" ,"databaseURL": "" }
+  "measurementId": "G-C63W3J82KQ" ,
+  "databaseURL": "https://layanproject-f01e1-default-rtdb.europe-west1.firebasedatabase.app/" }
 
 firebase = pyrebase.initialize_app(Config)
 auth = firebase.auth()
+db =firebase.database()
+
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -39,12 +42,23 @@ def signup():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        username = request.form['name']
         try:
             login_session['user'] = auth.create_user_with_email_and_password(email, password)
+
+
+            user = {"name": username, "email":email, "password":password}
+            db.child("Users").child(login_session['user']['localId']).set(user)
+
+
+
+
             return redirect(url_for('add_tweet'))
         except:
             error = "Authentication failed"
             return render_template("signup.html")
+    else:
+        return render_template("signup.html")
 
 
 @app.route('/add_tweet', methods=['GET', 'POST'])
